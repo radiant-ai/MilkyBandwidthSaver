@@ -1,0 +1,5 @@
+name: MilkyBandwidthSaver
+version: '${project.version}'
+main: fun.milkyway.milkybandwidthsaver.MilkyBandwidthSaver
+api-version: 1.18
+depend: [ packetevents ]
