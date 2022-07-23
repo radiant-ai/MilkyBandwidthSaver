@@ -1,14 +1,10 @@
 package fun.milkyway.milkybandwidthsaver;
 
-import io.github.retrooper.packetevents.event.PacketListenerAbstract;
-import io.github.retrooper.packetevents.event.PacketListenerPriority;
-import io.github.retrooper.packetevents.event.impl.PacketPlaySendEvent;
-import io.github.retrooper.packetevents.packettype.PacketType;
-import io.github.retrooper.packetevents.packetwrappers.play.out.entity.WrappedPacketOutEntity;
-import io.github.retrooper.packetevents.packetwrappers.play.out.entityheadrotation.WrappedPacketOutEntityHeadRotation;
+import com.github.retrooper.packetevents.event.PacketListenerAbstract;
+import com.github.retrooper.packetevents.event.PacketListenerPriority;
+import com.github.retrooper.packetevents.event.PacketSendEvent;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
-import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
 import java.util.Map;
@@ -28,8 +24,10 @@ public class PacketProfilerListener extends PacketListenerAbstract {
     }
 
     @Override
-    public void onPacketPlaySend(PacketPlaySendEvent event) {
-        var player = event.getPlayer();
+    public void onPacketSend(PacketSendEvent event) {
+        if (!(event.getPlayer() instanceof Player player)) {
+            return;
+        }
 
         if (event.isCancelled()) {
             return;
@@ -43,7 +41,7 @@ public class PacketProfilerListener extends PacketListenerAbstract {
             return;
         }
 
-        incrementPacket(event.getNMSPacket().getName());
+        incrementPacket(event.getPacketType().getName());
     }
 
     private void incrementPacket(String packetName) {

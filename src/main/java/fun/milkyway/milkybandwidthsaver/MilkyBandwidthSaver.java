@@ -1,12 +1,11 @@
 package fun.milkyway.milkybandwidthsaver;
 
 import co.aikar.commands.PaperCommandManager;
-import io.github.retrooper.packetevents.PacketEvents;
+import com.github.retrooper.packetevents.PacketEvents;
 import org.bukkit.command.CommandSender;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import java.util.Collections;
-import java.util.Set;
+import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -14,17 +13,17 @@ public final class MilkyBandwidthSaver extends JavaPlugin {
 
     private UUID targetPlayer;
     private CommandSender profilesReceiver;
-    private Set<UUID> playersWithSaver;
+    private Map<UUID, SavingsSettings> playersWithSaver;
 
     @Override
     public void onEnable() {
         targetPlayer = null;
         profilesReceiver = null;
-        playersWithSaver = Collections.newSetFromMap(new ConcurrentHashMap<>());
+        playersWithSaver = new ConcurrentHashMap<>();
         PaperCommandManager commandManager = new PaperCommandManager(this);
         commandManager.registerCommand(new MbsCommand(this));
-        PacketEvents.get().registerListener(new PacketProfilerListener(this));
-        PacketEvents.get().registerListener(new PacketSaverListener(this));
+        PacketEvents.getAPI().getEventManager().registerListener(new PacketProfilerListener(this));
+        PacketEvents.getAPI().getEventManager().registerListener(new PacketSaverListener(this));
         getServer().getPluginManager().registerEvents(new PlayerSettingsListener(this), this);
     }
 
@@ -50,14 +49,18 @@ public final class MilkyBandwidthSaver extends JavaPlugin {
     }
 
     public boolean isPlayerWithSaver(UUID player) {
-        return playersWithSaver.contains(player);
+        return playersWithSaver.containsKey(player);
     }
 
-    public void addPlayerWithSaver(UUID player) {
-        playersWithSaver.add(player);
+    public void addPlayerWithSaver(UUID player, SavingsSettings settings) {
+        playersWithSaver.put(player, settings);
     }
 
     public void removePlayerWithSaver(UUID player) {
         playersWithSaver.remove(player);
+    }
+
+    public SavingsSettings getSavingsSettings(UUID player) {
+        return playersWithSaver.get(player);
     }
 }

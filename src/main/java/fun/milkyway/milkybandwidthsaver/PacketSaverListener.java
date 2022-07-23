@@ -1,17 +1,13 @@
 package fun.milkyway.milkybandwidthsaver;
 
-import io.github.retrooper.packetevents.event.PacketListenerAbstract;
-import io.github.retrooper.packetevents.event.PacketListenerPriority;
-import io.github.retrooper.packetevents.event.impl.PacketPlaySendEvent;
-import io.github.retrooper.packetevents.packettype.PacketType;
-import io.github.retrooper.packetevents.packetwrappers.NMSPacket;
-import io.github.retrooper.packetevents.packetwrappers.play.out.entity.WrappedPacketOutEntity;
-import io.github.retrooper.packetevents.packetwrappers.play.out.entityeffect.WrappedPacketOutEntityEffect;
-import io.github.retrooper.packetevents.packetwrappers.play.out.entityheadrotation.WrappedPacketOutEntityHeadRotation;
-import io.github.retrooper.packetevents.packetwrappers.play.out.entityvelocity.WrappedPacketOutEntityVelocity;
-import io.github.retrooper.packetevents.packetwrappers.play.out.removeentityeffect.WrappedPacketOutRemoveEntityEffect;
-import io.github.retrooper.packetevents.packetwrappers.play.out.updateattributes.WrappedPacketOutUpdateAttributes;
-import org.bukkit.entity.Horse;
+import com.github.retrooper.packetevents.event.PacketListenerAbstract;
+import com.github.retrooper.packetevents.event.PacketListenerPriority;
+import com.github.retrooper.packetevents.event.PacketSendEvent;
+import com.github.retrooper.packetevents.protocol.packettype.PacketType;
+import com.github.retrooper.packetevents.wrapper.play.server.*;
+import io.github.retrooper.packetevents.util.SpigotReflectionUtil;
+import org.bukkit.entity.FishHook;
+import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
 
 public class PacketSaverListener extends PacketListenerAbstract {
@@ -23,8 +19,10 @@ public class PacketSaverListener extends PacketListenerAbstract {
     }
 
     @Override
-    public void onPacketPlaySend(PacketPlaySendEvent event) {
-        var player = event.getPlayer();
+    public void onPacketSend(PacketSendEvent event) {
+        if (!(event.getPlayer() instanceof Player player)) {
+            return;
+        }
 
         if (event.isCancelled()) {
             return;
@@ -34,28 +32,34 @@ public class PacketSaverListener extends PacketListenerAbstract {
             return;
         }
 
-        if (event.getPacketId() == PacketType.Play.Server.ENTITY_HEAD_ROTATION) {
-            var packet = new WrappedPacketOutEntityHeadRotation(event.getNMSPacket());
-            if (!(packet.getEntity() instanceof Player)) {
+        if (event.getPacketType() == PacketType.Play.Server.ENTITY_ROTATION) {
+            var wrapper = new WrapperPlayServerEntityRotation(event);
+            var entityId = wrapper.getEntityId();
+            var entity = SpigotReflectionUtil.getEntityById(entityId);
+            if (!(entity instanceof Player)) {
                 event.setCancelled(true);
                 return;
             }
         }
 
-        if (event.getPacketId() == PacketType.Play.Server.ENTITY_LOOK) {
-            var packet = new WrappedPacketOutEntity.WrappedPacketOutEntityLook(event.getNMSPacket());
-            if (!(packet.getEntity() instanceof Player)) {
+        if (event.getPacketType() == PacketType.Play.Server.ENTITY_HEAD_LOOK) {
+            var wrapper = new WrapperPlayServerEntityHeadLook(event);
+            var entityId = wrapper.getEntityId();
+            var entity = SpigotReflectionUtil.getEntityById(entityId);
+            if (!(entity instanceof Player)) {
                 event.setCancelled(true);
                 return;
             }
         }
 
-        if (event.getPacketId() == PacketType.Play.Server.REL_ENTITY_MOVE_LOOK) {
-            var packet = new WrappedPacketOutEntity.WrappedPacketOutRelEntityMoveLook(event.getNMSPacket());
-            if (!(packet.getEntity() instanceof Player)) {
-                var newPacket = new WrappedPacketOutEntity.WrappedPacketOutRelEntityMove(packet.getEntityId(), packet.getDeltaX(), packet.getDeltaY(), packet.getDeltaZ(), packet.isOnGround());
+        if (event.getPacketType() == PacketType.Play.Server.ENTITY_RELATIVE_MOVE_AND_ROTATION) {
+            var wrapper = new WrapperPlayServerEntityRelativeMoveAndRotation(event);
+            var entityId = wrapper.getEntityId();
+            var entity = SpigotReflectionUtil.getEntityById(entityId);
+            if (!(entity instanceof Player)) {
+                var newPacket = new WrapperPlayServerEntityRelativeMove(entityId, wrapper.getDeltaX(), wrapper.getDeltaY(), wrapper.getDeltaZ(), wrapper.isOnGround());
                 try {
-                    event.setNMSPacket(new NMSPacket(newPacket.asNMSPacket()));
+                    event.setByteBuf(newPacket.buffer);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -63,84 +67,87 @@ public class PacketSaverListener extends PacketListenerAbstract {
             }
         }
 
-        if (event.getPacketId() == PacketType.Play.Server.ENTITY_VELOCITY) {
-            var packet = new WrappedPacketOutEntityVelocity(event.getNMSPacket());
-            if (!(packet.getEntity() instanceof Player)) {
+        if (event.getPacketType() == PacketType.Play.Server.ENTITY_VELOCITY) {
+            var wrapper = new WrapperPlayServerEntityVelocity(event);
+            var entityId = wrapper.getEntityId();
+            var entity = SpigotReflectionUtil.getEntityById(entityId);
+            if (!(entity instanceof Player) || !(entity instanceof FishHook) || !(entity instanceof Item)) {
                 event.setCancelled(true);
                 return;
             }
         }
 
-        if (event.getPacketId() == PacketType.Play.Server.ENTITY_EFFECT) {
-            var packet = new WrappedPacketOutEntityEffect(event.getNMSPacket());
-            if (!(packet.getEntity() instanceof Player)) {
+        if (event.getPacketType() == PacketType.Play.Server.ENTITY_EFFECT) {
+            var wrapper = new WrapperPlayServerEntityEffect(event);
+            var entityId = wrapper.getEntityId();
+            var entity = SpigotReflectionUtil.getEntityById(entityId);
+            if (!(entity instanceof Player)) {
                 event.setCancelled(true);
                 return;
             }
         }
 
-        if (event.getPacketId() == PacketType.Play.Server.UPDATE_ATTRIBUTES) {
-            var packet = new WrappedPacketOutUpdateAttributes(event.getNMSPacket());
-            if (!(packet.getEntity() instanceof Player || packet.getEntity() instanceof Horse)) {
+        if (event.getPacketType() == PacketType.Play.Server.ENTITY_PROPERTIES) {
+            var wrapper = new WrapperPlayServerEntityProperties(event);
+            var entityId = wrapper.getEntityId();
+            var entity = SpigotReflectionUtil.getEntityById(entityId);
+            if (!(entity instanceof Player)) {
                 event.setCancelled(true);
                 return;
             }
         }
 
-        if (event.getPacketId() == PacketType.Play.Server.REMOVE_ENTITY_EFFECT) {
-            var packet = new WrappedPacketOutRemoveEntityEffect(event.getNMSPacket());
-            if (!(packet.getEntity() instanceof Player)) {
+        if (event.getPacketType() == PacketType.Play.Server.REMOVE_ENTITY_EFFECT) {
+            var wrapper = new WrapperPlayServerRemoveEntityEffect(event);
+            var entityId = wrapper.getEntityId();
+            var entity = SpigotReflectionUtil.getEntityById(entityId);
+            if (!(entity instanceof Player)) {
                 event.setCancelled(true);
                 return;
             }
         }
 
-        if (event.getPacketId() == PacketType.Play.Server.WORLD_PARTICLES) {
+        if (event.getPacketType() == PacketType.Play.Server.PARTICLE) {
             event.setCancelled(true);
             return;
         }
 
-        if (event.getPacketId() == PacketType.Play.Server.LIGHT_UPDATE) {
+        if (event.getPacketType() == PacketType.Play.Server.UPDATE_LIGHT) {
             event.setCancelled(true);
             return;
         }
 
-        if (event.getPacketId() == PacketType.Play.Server.SPAWN_ENTITY_EXPERIENCE_ORB) {
+        if (event.getPacketType() == PacketType.Play.Server.SPAWN_EXPERIENCE_ORB) {
             event.setCancelled(true);
             return;
         }
 
-        if (event.getPacketId() == PacketType.Play.Server.BLOCK_BREAK_ANIMATION) {
+        if (event.getPacketType() == PacketType.Play.Server.BLOCK_BREAK_ANIMATION) {
             event.setCancelled(true);
             return;
         }
 
-        if (event.getPacketId() == PacketType.Play.Server.STOP_SOUND) {
+        if (event.getPacketType() == PacketType.Play.Server.STOP_SOUND) {
             event.setCancelled(true);
             return;
         }
 
-        if (event.getPacketId() == PacketType.Play.Server.CUSTOM_SOUND_EFFECT) {
+        if (event.getPacketType() == PacketType.Play.Server.SOUND_EFFECT) {
             event.setCancelled(true);
             return;
         }
 
-        if (event.getPacketId() == PacketType.Play.Server.ENTITY_SOUND) {
+        if (event.getPacketType() == PacketType.Play.Server.ENTITY_SOUND_EFFECT) {
             event.setCancelled(true);
             return;
         }
 
-        if (event.getPacketId() == PacketType.Play.Server.NAMED_SOUND_EFFECT) {
+        if (event.getPacketType() == PacketType.Play.Server.NAMED_SOUND_EFFECT) {
             event.setCancelled(true);
             return;
         }
 
-        if (event.getPacketId() == PacketType.Play.Server.LOOK_AT) {
-            event.setCancelled(true);
-            return;
-        }
-
-        if (event.getPacketId() == PacketType.Play.Server.SCOREBOARD_SCORE) {
+        if (event.getPacketType() == PacketType.Play.Server.UPDATE_SCORE) {
             event.setCancelled(true);
             return;
         }

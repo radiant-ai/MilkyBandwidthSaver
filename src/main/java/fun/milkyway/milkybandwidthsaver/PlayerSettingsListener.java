@@ -5,12 +5,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 
-public class PlayerSettingsListener implements Listener {
-    private final MilkyBandwidthSaver plugin;
-
-    public PlayerSettingsListener(MilkyBandwidthSaver plugin) {
-        this.plugin = plugin;
-    }
+public record PlayerSettingsListener(MilkyBandwidthSaver plugin) implements Listener {
 
     @EventHandler
     public void playerChangeSettings(PlayerClientOptionsChangeEvent event) {
@@ -20,9 +15,11 @@ public class PlayerSettingsListener implements Listener {
             return;
         }
 
+        var settings = plugin.getSavingsSettings(player.getUniqueId());
+
         Bukkit.getScheduler().runTaskLater(plugin, () -> {
             if (player.isOnline()) {
-                player.setSendViewDistance(3);
+                player.setSendViewDistance(settings.getViewDistance());
             }
         }, 1L);
     }
