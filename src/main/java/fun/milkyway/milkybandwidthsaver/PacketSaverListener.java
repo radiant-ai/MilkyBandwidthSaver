@@ -113,16 +113,6 @@ public class PacketSaverListener extends PacketListenerAbstract {
             }
         }
 
-        if (event.getPacketType() == PacketType.Play.Server.ENTITY_PROPERTIES) {
-            var wrapper = new WrapperPlayServerEntityProperties(event);
-            var entityId = wrapper.getEntityId();
-            var entity = SpigotReflectionUtil.getEntityById(entityId);
-            if (!(entity instanceof Player)) {
-                event.setCancelled(true);
-                return;
-            }
-        }
-
         if (event.getPacketType() == PacketType.Play.Server.REMOVE_ENTITY_EFFECT) {
             var wrapper = new WrapperPlayServerRemoveEntityEffect(event);
             var entityId = wrapper.getEntityId();

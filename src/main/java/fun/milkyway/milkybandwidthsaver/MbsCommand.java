@@ -36,6 +36,13 @@ public class MbsCommand extends BaseCommand {
         player.sendMessage(MiniMessage.miniMessage().deserialize("<gray>[MilkyBandwidthSaver] <green>Начало отладки для <white>"+otherPlayer.getName()+"<green>."));
     }
 
+    @Subcommand("reset")
+    @CommandPermission("mbs.reset")
+    public void reset(CommandSender player) {
+        plugin.resetPlayersWithSaver();
+        player.sendMessage(MiniMessage.miniMessage().deserialize("<gray>[MilkyBandwidthSaver] <green>Экономия трафика отключена для всех игроков."));
+    }
+
     @Subcommand("toggle")
     @CommandPermission("mbs.toggle")
     public void toggle(Player player, @Optional Integer viewDistance) {

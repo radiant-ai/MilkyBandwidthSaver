@@ -52,6 +52,10 @@ public final class MilkyBandwidthSaver extends JavaPlugin {
         return playersWithSaver.containsKey(player);
     }
 
+    public void resetPlayersWithSaver() {
+        playersWithSaver.clear();
+    }
+
     public void addPlayerWithSaver(UUID player, SavingsSettings settings) {
         playersWithSaver.put(player, settings);
     }
