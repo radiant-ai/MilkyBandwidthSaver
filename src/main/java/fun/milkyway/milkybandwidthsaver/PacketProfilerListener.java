@@ -62,7 +62,7 @@ public class PacketProfilerListener extends PacketListenerAbstract {
             if (plugin.getProfilesReceiver() == null || (plugin.getProfilesReceiver() instanceof Player player && !player.isOnline())) {
                 return;
             }
-            var sortedEntryList = packets.entrySet().stream().sorted((e1, e2) -> e2.getValue().get() - e1.getValue().get()).collect(java.util.stream.Collectors.toList());
+            var sortedEntryList = packets.entrySet().stream().sorted((e1, e2) -> e2.getValue().get() - e1.getValue().get()).toList();
             var builder = Component.text();
             builder.append(MiniMessage.miniMessage().deserialize("\n<gray>========= PACKET SUMMARY FOR 10 SECONDS ==========\n"));
 

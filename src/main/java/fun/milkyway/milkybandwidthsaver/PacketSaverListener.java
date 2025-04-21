@@ -7,6 +7,7 @@ import com.github.retrooper.packetevents.event.PacketListenerPriority;
 import com.github.retrooper.packetevents.event.PacketSendEvent;
 import com.github.retrooper.packetevents.protocol.packettype.PacketType;
 import com.github.retrooper.packetevents.wrapper.play.server.*;
+import io.github.retrooper.packetevents.util.SpigotConversionUtil;
 import io.github.retrooper.packetevents.util.SpigotReflectionUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.*;
@@ -45,7 +46,7 @@ public class PacketSaverListener extends PacketListenerAbstract {
         if (event.getPacketType() == PacketType.Play.Server.ENTITY_ROTATION) {
             var wrapper = new WrapperPlayServerEntityRotation(event);
             var entityId = wrapper.getEntityId();
-            var entity = SpigotReflectionUtil.getEntityById(entityId);
+            var entity = SpigotConversionUtil.getEntityById(player.getWorld(), entityId);
             if (!(entity instanceof Player)) {
                 event.setCancelled(true);
                 return;
@@ -55,7 +56,7 @@ public class PacketSaverListener extends PacketListenerAbstract {
         if (event.getPacketType() == PacketType.Play.Server.ENTITY_HEAD_LOOK) {
             var wrapper = new WrapperPlayServerEntityHeadLook(event);
             var entityId = wrapper.getEntityId();
-            var entity = SpigotReflectionUtil.getEntityById(entityId);
+            var entity = SpigotConversionUtil.getEntityById(player.getWorld(), entityId);
             if (!(entity instanceof Player)) {
                 event.setCancelled(true);
                 return;
@@ -65,7 +66,7 @@ public class PacketSaverListener extends PacketListenerAbstract {
         if (event.getPacketType() == PacketType.Play.Server.ENTITY_RELATIVE_MOVE_AND_ROTATION) {
             var wrapper = new WrapperPlayServerEntityRelativeMoveAndRotation(event);
             var entityId = wrapper.getEntityId();
-            var entity = SpigotReflectionUtil.getEntityById(entityId);
+            var entity = SpigotConversionUtil.getEntityById(player.getWorld(), entityId);
             if (!(entity instanceof Player)) {
                 var newPacket = new WrapperPlayServerEntityRelativeMove(entityId, wrapper.getDeltaX(), wrapper.getDeltaY(), wrapper.getDeltaZ(), wrapper.isOnGround());
                 packetEventsAPI.getPlayerManager().sendPacketSilently(player, newPacket);
@@ -77,7 +78,7 @@ public class PacketSaverListener extends PacketListenerAbstract {
         if (event.getPacketType() == PacketType.Play.Server.ENTITY_VELOCITY) {
             var wrapper = new WrapperPlayServerEntityVelocity(event);
             var entityId = wrapper.getEntityId();
-            var entity = SpigotReflectionUtil.getEntityById(entityId);
+            var entity = SpigotConversionUtil.getEntityById(player.getWorld(), entityId);
             if (!(entity instanceof Player || entity instanceof Projectile || entity instanceof Item)) {
                 event.setCancelled(true);
                 return;
@@ -87,7 +88,7 @@ public class PacketSaverListener extends PacketListenerAbstract {
         if (event.getPacketType() == PacketType.Play.Server.ENTITY_TELEPORT) {
             var wrapper = new WrapperPlayServerEntityTeleport(event);
             var entityId = wrapper.getEntityId();
-            var entity = SpigotReflectionUtil.getEntityById(entityId);
+            var entity = SpigotConversionUtil.getEntityById(player.getWorld(), entityId);
 
             if (!(entity instanceof Minecart)) {
                 return;
@@ -106,7 +107,7 @@ public class PacketSaverListener extends PacketListenerAbstract {
         if (event.getPacketType() == PacketType.Play.Server.ENTITY_EFFECT) {
             var wrapper = new WrapperPlayServerEntityEffect(event);
             var entityId = wrapper.getEntityId();
-            var entity = SpigotReflectionUtil.getEntityById(entityId);
+            var entity = SpigotConversionUtil.getEntityById(player.getWorld(), entityId);
             if (!(entity instanceof Player)) {
                 event.setCancelled(true);
                 return;
@@ -116,7 +117,7 @@ public class PacketSaverListener extends PacketListenerAbstract {
         if (event.getPacketType() == PacketType.Play.Server.REMOVE_ENTITY_EFFECT) {
             var wrapper = new WrapperPlayServerRemoveEntityEffect(event);
             var entityId = wrapper.getEntityId();
-            var entity = SpigotReflectionUtil.getEntityById(entityId);
+            var entity = SpigotConversionUtil.getEntityById(player.getWorld(), entityId);
             if (!(entity instanceof Player)) {
                 event.setCancelled(true);
                 return;
